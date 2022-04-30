@@ -99,6 +99,8 @@ function redeem(
         if (pendingRewardAmt() !=0 ) {reinvest();}
 
         assets = previewRedeem(shares);
+        
+        _withdrawApple(assets);
 
         beforeWithdraw(assets, shares);
 
