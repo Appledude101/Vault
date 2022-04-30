@@ -24,10 +24,10 @@ contract AutoCompound4626 is ERC4626 {
     IMasterAppleChef public stakingContract;
 
     //Apple Token Address
-    address public constant _apple = 0xd9145CCE52D386f254917e481eB44e9943F39138;
+    address public constant _apple = 0xBbB76769D71302a828D5a745B4e984ceFE345cBF;
  
     //staking in AppleMasterChef
-    address public constant _stakingContract = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
+    address public constant _stakingContract = 0x1AA5C230fFaCc818655503d39a14adE6F96d81D0;
 
     //Owner of Strategy Vault
     address public owner;
@@ -76,45 +76,39 @@ contract AutoCompound4626 is ERC4626 {
     /*
     Function redeems shares for alloted amount of asset in protocol.
     First makes sure that assets will be non-zero as previewRedeem rounds down.
-    Next calculates the pending rewards that will be harvested and seperates it into the msg.Senders rewards and all others.
-    Then withdraws the assets from the staking contract and also all rewards.
+    Next calculates the pending rewards that will be harvested and if nonzero calls reinvest function.
+    Must then recalculate assets as total assets will increase if reinvested as total assets only counts those assets staked.
     It then stakes the rewards that msg.Sender is not entitles too.
     Burns the shares and then finally transfers assets (including any pending rewards) to msg.Sender.
-    
-     function redeem(
+`   */
+
+function redeem(
         uint256 shares,
         address receiver,
         address owner
     ) public override returns (uint256 assets) {
-        //checks to see if msg.sender owner. If not, must check to see how much of owner's balance msg.sender allowed to use
         if (msg.sender != owner) {
             uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
-            //if msg.sender not given infinite allowance, then take away withdraw amount of shares from allowed
+
             if (allowed != type(uint256).max) allowance[owner][msg.sender] = allowed - shares;
         }
 
         // Check for rounding error since we round down in previewRedeem.
-        //assets rounded down because contract supplying the assets in exchange
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
-        uint userPending = pendingRewardAmt().mul(shares).div(totalSupply);
-        uint otherPending = pendingRewardAmt().sub(userPending);
+        if (pendingRewardAmt() !=0 ) {reinvest();}
 
-        _withdrawApple(assets);
+        assets = previewRedeem(shares);
 
-        assets = assets.add(userPending);
-        if (otherPending != 0) {_stakeApple(otherPending);}
+        beforeWithdraw(assets, shares);
 
-        beforeWithdraw(assets, shares); //Does nothing empty function for now.
-
-        //burn shares of owner first before transferring
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
         asset.safeTransfer(receiver, assets);
     }
-    */
+      
 
 function withdraw(
         uint256 assets,
@@ -186,6 +180,3 @@ function withdraw(
         uint maxPendingAssets = pendingRewardAmt().mul(maxRedeem(owner)).div(totalSupply);
         return convertToAssets(balanceOf[owner])+maxPendingAssets;
     }
-
-    
-}
