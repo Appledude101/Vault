@@ -17,6 +17,6 @@ Vault: [0xeEd0Cb151E7e633675eEd04996D61a3Fd0058EE6](https://rinkeby.etherscan.io
 
 The vault will let you deposit your appletokens into the apple master chef to gain rewards. It then has a reinvest function that is called whenever someone deposits or withdraws. This collects all the rewarded apple tokens and then deposits them into apple master chef compunding the rewards.  
 
-#Redeem Function not working on testnet. Had forgotten to change redeem function to also reinvest before redeeming. The corrected code is posted on github.
+# Warning: Redeem Function not working on testnet. Had forgotten to change redeem function to also reinvest before redeeming. The corrected code is posted on github.
   
 To test deposit/withdrawl/rewards: (Can see transaction history under this wallet [0x7b94ec20B75A4818B252bcd25A3b52c477FEb0c6](https://rinkeby.etherscan.io/address/0x7b94ec20b75a4818b252bcd25a3b52c477feb0c6)). 
